@@ -30,7 +30,6 @@ class CustomNavBar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // We pass the context, index, icon, label, and the EXACT route name from main.dart
             _buildNavItem(context, 0, Icons.home_filled, 'Home', '/homepage'),
             _buildNavItem(context, 1, Icons.info_outline, 'About', '/aboutus'),
             _buildNavItem(context, 2, Icons.email_outlined, 'Contact', '/contactus'),
@@ -45,7 +44,6 @@ class CustomNavBar extends StatelessWidget {
     
     return GestureDetector(
       onTap: () {
-        // Only navigate if they aren't already on that page
         if (!isSelected) {
           Navigator.pushReplacementNamed(context, routeName);
         }

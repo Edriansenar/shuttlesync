@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ethereal',
-      debugShowCheckedModeBanner: false, // Added this to remove the debug banner
+      debugShowCheckedModeBanner: false, 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 47, 16, 100),
@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       
-      // 2. Map your routes to the correct screen classes
       routes: {
         '/homepage': (context) => const HomePage(),
         '/aboutus': (context) => const AboutUsPage(),
@@ -35,7 +34,6 @@ class MyApp extends StatelessWidget {
         '/contactus': (context) => const ContactUsPage(),
       },
       
-      // 3. Set the initial screen when the app launches
       home: const AboutUsPage(), 
     );
   }

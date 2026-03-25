@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             const SizedBox(height: 48),
             
-            // Header Section
+            
             const Text(
               'Welcome Back.',
               style: TextStyle(
@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 40),
             
-            // Login Card
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     
-                    // 1. THIS IS YOUR NEW CUSTOM WIDGET IN ACTION (Email)
+                    
                     const CustomInputField(
                       label: 'EMAIL ADDRESS',
                       hintText: 'name@example.com',
@@ -91,13 +91,13 @@ class _LoginPageState extends State<LoginPage> {
                     
                     const SizedBox(height: 20),
                     
-                    // 2. YOUR CUSTOM WIDGET (Password)
+                    
                     CustomInputField(
                       label: 'PASSWORD',
                       hintText: '••••••••',
                       obscureText: _obscurePassword,
                       prefixIcon: Icons.lock_outline,
-                      // We can pass the visibility toggle right into our widget!
+                      
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
@@ -112,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     
-                    // Forgot Password Link
+                    
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -130,10 +130,10 @@ class _LoginPageState extends State<LoginPage> {
                     
                     const SizedBox(height: 12),
                     
-                    // Login Button (We will modularize this next!)
+                    
                     ElevatedButton(
                       onPressed: () {
-                        // Example of how you'd navigate to the home page after login
+                        
                         Navigator.pushReplacementNamed(context, '/homepage');
                       },
                       style: ElevatedButton.styleFrom(
@@ -156,8 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     
-                    // ... (I kept the rest of the social buttons out to keep this snippet clean, 
-                    // but you can leave your social login buttons here from the original code!)
+                    
                   ],
                 ),
               ),

@@ -9,7 +9,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Navigation index (0 = Home, 1 = About, 2 = Contact)
   int _selectedIndex = 0;
 
   @override
@@ -37,7 +36,6 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.account_circle_outlined, color: Color(0xFF0D5CEB), size: 28),
             onPressed: () {
-              // Navigate to login/profile when user icon is tapped
               Navigator.pushNamed(context, '/login');
             },
           ),
@@ -49,7 +47,6 @@ class _HomePageState extends State<HomePage> {
           children: [
             const SizedBox(height: 48),
             
-            // Hero Section
             const Text(
               'Welcome to',
               style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Color(0xFF1F2937), height: 1.1),
@@ -69,7 +66,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 40),
             
-            // Action Buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: CustomSubmitButton(
@@ -91,7 +87,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 48),
             
-            // Feature Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -135,7 +130,6 @@ class _HomePageState extends State<HomePage> {
             
             const SizedBox(height: 80),
             
-            // Minimal Footer
             Container(
               width: double.infinity,
               color: const Color(0xFFF3F4F6), 
@@ -164,7 +158,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       
-      // Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,

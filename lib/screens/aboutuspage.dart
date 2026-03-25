@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-// Import your custom navigation bar!
 import 'package:etherealapp/widgets/nav_bar.dart';
 
-// Notice this is just the page now, no main() or MaterialApp wrapper!
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
 
@@ -19,7 +17,7 @@ class AboutUsPage extends StatelessWidget {
           onPressed: () {},
         ),
         title: const Text(
-          'Ethereal', // Cleaned up title
+          'Ethereal', 
           style: TextStyle(
             color: Color(0xFF1F2937),
             fontWeight: FontWeight.w900,
@@ -41,7 +39,6 @@ class AboutUsPage extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
             
-            // Hero Image
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ClipRRect(
@@ -64,7 +61,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             
-            // Main Heading & Body
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24),
               child: Text(
@@ -82,7 +78,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             
-            // Feature Card 1: Intentional Design
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -107,7 +102,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Feature Card 2: Effortless Speed
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -128,7 +122,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             
-            // Mission Statement
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -146,7 +139,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             
-            // Philosophy Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -197,7 +189,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 80),
             
-            // Footer Area
             Container(
               width: double.infinity,
               color: const Color(0xFFF3F4F6),
@@ -226,12 +217,10 @@ class AboutUsPage extends StatelessWidget {
         ),
       ),
       
-      // THIS IS THE MAGIC LINE! It uses your custom nav bar and sets the active icon to "1" (About Us)
       bottomNavigationBar: const CustomNavBar(selectedIndex: 1),
     );
   }
 
-  // Small helper for the footer links
   Widget _footerLink(String text) {
     return InkWell(
       onTap: () {},

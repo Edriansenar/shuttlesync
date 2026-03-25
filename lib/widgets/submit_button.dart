@@ -9,7 +9,7 @@ class CustomSubmitButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
-    this.icon, // Optional: You only pass this if you want an icon next to the text
+    this.icon, 
   });
 
   @override
@@ -36,7 +36,6 @@ class CustomSubmitButton extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          // Only show the icon and spacing if an icon was provided
           if (icon != null) ...[
             const SizedBox(width: 8),
             Icon(icon, size: 20),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:etherealapp/widgets/input_fields.dart';
 import 'package:etherealapp/widgets/submit_button.dart';
-// Import your custom navigation bar!
 import 'package:etherealapp/widgets/nav_bar.dart'; 
 
 class ContactUsPage extends StatelessWidget {
@@ -43,7 +42,6 @@ class ContactUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             
-            // Contact Form Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -59,13 +57,11 @@ class ContactUsPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     const CustomInputField(label: 'EMAIL', hintText: 'hello@ethereal.com'),
                     const SizedBox(height: 20),
-                    // Using maxLines to make the message box taller!
                     const CustomInputField(label: 'MESSAGE', hintText: 'How can we help?', maxLines: 4),
                     const SizedBox(height: 24),
                     CustomSubmitButton(
                       text: 'Send Message',
                       onPressed: () {
-                        // Logic to send the message goes here
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Message Sent!')),
                         );
@@ -77,7 +73,6 @@ class ContactUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
 
-            // Contact Info
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -93,12 +88,10 @@ class ContactUsPage extends StatelessWidget {
         ),
       ),
       
-      // ADDED THIS LINE: The magic navigation bar (Index 2 is for Contact)
       bottomNavigationBar: const CustomNavBar(selectedIndex: 2),
     );
   }
 
-  // A small private helper widget just for this page
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [

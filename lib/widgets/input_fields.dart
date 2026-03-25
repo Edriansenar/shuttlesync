@@ -27,7 +27,6 @@ class CustomInputField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // The tiny bold label above the text field
         Text(
           label.toUpperCase(),
           style: const TextStyle(
@@ -39,7 +38,6 @@ class CustomInputField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         
-        // The actual text field
         TextField(
           controller: controller,
           obscureText: obscureText,
@@ -55,12 +53,10 @@ class CustomInputField extends StatelessWidget {
             filled: true,
             fillColor: const Color(0xFFF3F4F6),
             
-            // Only show prefix icon if one was provided
             prefixIcon: prefixIcon != null 
                 ? Icon(prefixIcon, color: const Color(0xFF6B7280), size: 20) 
                 : null,
                 
-            // Suffix icon is useful for the "eye" button on passwords
             suffixIcon: suffixIcon,
             
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

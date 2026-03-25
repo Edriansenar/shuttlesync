@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// Import your reusable widgets!
 import 'package:etherealapp/widgets/input_fields.dart';
 import 'package:etherealapp/widgets/submit_button.dart';
 
@@ -11,7 +10,6 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Added this so users can toggle seeing their password while typing
   bool _obscurePassword = true; 
 
   @override
@@ -23,7 +21,6 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             const SizedBox(height: 80), 
             
-            // Header Section
             Container(
               width: 64,
               height: 64,
@@ -57,7 +54,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 40),
             
-            // Registration Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -78,14 +74,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     
-                    // 1. Full Name Field (Using our widget!)
+                    
                     const CustomInputField(
                       label: 'FULL NAME',
                       hintText: 'John Doe',
                     ),
                     const SizedBox(height: 24),
                     
-                    // 2. Email Field (Using our widget!)
+                    
                     const CustomInputField(
                       label: 'EMAIL ADDRESS',
                       hintText: 'name@example.com',
@@ -93,7 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 24),
                     
-                    // 3. Password Field (Using our widget + visibility toggle!)
+                    
                     CustomInputField(
                       label: 'PASSWORD',
                       hintText: '••••••••',
@@ -113,22 +109,22 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 32),
                     
-                    // 4. Submit Button (Using our widget!)
+                    
                     CustomSubmitButton(
                       text: 'Register',
                       onPressed: () {
-                        // Navigate to home or trigger registration logic
+                        
                         Navigator.pushReplacementNamed(context, '/homepage');
                       },
                     ),
                     
                     const SizedBox(height: 24),
                     
-                    // Login Link
+                    
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          // Go back to login page
+                          
                           Navigator.pushReplacementNamed(context, '/login');
                         },
                         child: RichText(
@@ -158,7 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 40),
             
-            // Pagination Dots
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -193,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
             
             const SizedBox(height: 64),
             
-            // Footer Area
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40),
