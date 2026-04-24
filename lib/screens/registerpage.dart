@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shuttlesync/database/database_helper.dart'; // IMPORTANT: Adjust path if needed
+import 'package:shuttlesync/database/database_helper.dart'; 
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

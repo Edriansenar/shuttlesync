@@ -22,7 +22,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
   File? _selectedImage;
   bool _isPublishing = false;
 
-  // --- Dynamic State ---
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _todaysBookings = [];
   bool _isLoadingSchedule = true;
@@ -34,7 +33,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   void initState() {
     super.initState();
     _fetchSchedule();
-    _fetchInventory(); // Load inventory on startup!
+    _fetchInventory(); 
   }
 
   @override
@@ -45,9 +44,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     super.dispose();
   }
 
-  // ==========================================
-  // INVENTORY LOGIC (VIEW, DELETE, ADD)
-  // ==========================================
+
   void _fetchInventory() async {
     setState(() => _isLoadingInventory = true);
     final products = await DatabaseHelper.instance.getAllProducts();
@@ -152,9 +149,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product Published to Store!'), backgroundColor: Colors.green));
   }
 
-  // ==========================================
-  // SCHEDULE LOGIC
-  // ==========================================
+
   void _fetchSchedule() async {
     setState(() => _isLoadingSchedule = true);
     String formattedMonth = _selectedDate.month.toString().padLeft(2, '0');
@@ -163,7 +158,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
     final bookings = await DatabaseHelper.instance.getBookingsByDate(dateString);
     
-    // Sort bookings by time for the timeline
     bookings.sort((a, b) => a['start_time'].compareTo(b['start_time']));
 
     if (!mounted) return;
@@ -308,9 +302,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(height: 40),
 
-            // ==========================================
-            // DYNAMIC INVENTORY VIEW
-            // ==========================================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -355,9 +346,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(height: 40),
 
-            // ==========================================
-            // ADD APPAREL
-            // ==========================================
+
             const Text("Add New Apparel", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 4),
             const Text("Upload directly to database", style: TextStyle(color: textGray, fontSize: 13)),
@@ -418,9 +407,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(height: 40),
 
-            // ==========================================
-            // COURT MATRIX
-            // ==========================================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -458,9 +444,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(height: 40),
 
-            // ==========================================
-            // NEW: DAILY BOOKING TIMELINE
-            // ==========================================
+
             const Text("Daily Booking Timeline", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 4),
             const Text("Chronological list of all reservations", style: TextStyle(color: textGray, fontSize: 13)),

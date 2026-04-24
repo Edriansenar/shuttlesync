@@ -8,8 +8,7 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
-  // State for the top toggle buttons
-  int _selectedTimeframeIndex = 1; // Defaults to "30 Days"
+  int _selectedTimeframeIndex = 1; 
   final List<String> _timeframes = ['7 Days', '30 Days', 'YTD'];
 
   @override
@@ -26,7 +25,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         backgroundColor: bgColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        // --- FIXED: Added a Back Button! ---
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -66,7 +64,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             const SizedBox(height: 24),
 
-            // --- Timeframe Toggles ---
             Row(
               children: List.generate(_timeframes.length, (index) {
                 bool isSelected = _selectedTimeframeIndex == index;
@@ -101,7 +98,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             const SizedBox(height: 24),
 
-            // --- Metric Cards ---
             _buildMetricCard(
               title: "TOTAL REVENUE",
               value: "\$24,590",
@@ -143,7 +139,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             const SizedBox(height: 32),
 
-            // --- Revenue Trends Chart ---
             const Text("Revenue Trends", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 4),
             const Text("Daily gross income for current month", style: TextStyle(color: textGray, fontSize: 13)),
@@ -151,13 +146,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             _buildCustomBarChart(),
             const SizedBox(height: 32),
 
-            // --- Top Selling Gear ---
             const Text("Top Selling Gear", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 16),
             _buildTopSellingList(darkCardColor, primaryPurple, accentPink, textGray),
             const SizedBox(height: 24),
 
-            // --- View All Button ---
             Center(
               child: TextButton(
                 onPressed: () {},
@@ -173,7 +166,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // --- Reusable Metric Card ---
   Widget _buildMetricCard({
     required String title,
     required String value,
@@ -183,7 +175,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     required Color cardColor,
     required Color accentColor,
   }) {
-    // Determine trend colors and icons
     Color trendColor;
     IconData trendIcon;
     if (trendUp == true) {
@@ -204,7 +195,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ),
       child: Stack(
         children: [
-          // Background subtle glow circle
           Positioned(
             right: -20,
             top: -20,
@@ -257,7 +247,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // --- Custom Bar Chart Widget ---
   Widget _buildCustomBarChart() {
     final List<Map<String, dynamic>> chartData = [
       {'day': 'Mon', 'val': 0.35, 'color': const Color(0xFF9166FF)},
@@ -318,7 +307,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // --- Top Selling Gear List ---
   Widget _buildTopSellingList(Color cardColor, Color primaryPurple, Color accentPink, Color textGray) {
     final List<Map<String, dynamic>> items = [
       {'name': 'AeroPro Strike', 'cat': 'Racket', 'units': '124', 'icon': Icons.sports_tennis, 'color': accentPink},

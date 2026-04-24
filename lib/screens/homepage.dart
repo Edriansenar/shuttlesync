@@ -11,8 +11,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- FIXED: Removed the nested MaterialApp! ---
-    // This stops the "_dependents.isEmpty" error when logging out!
     return DashboardScreen(currentUser: currentUser);
   }
 }

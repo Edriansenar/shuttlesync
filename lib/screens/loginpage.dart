@@ -15,10 +15,8 @@ class _LoginScreenState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   void _loginUser() async {
-    // FIX: Force email to be lowercase and remove any hidden spaces
     String email = _emailController.text.trim().toLowerCase();
     
-    // FIX: Trim the password in case the mobile keyboard added a trailing space
     String password = _passwordController.text.trim(); 
 
     if (email.isEmpty || password.isEmpty) {
@@ -29,13 +27,11 @@ class _LoginScreenState extends State<LoginPage> {
     }
 
     try {
-      // --- REAL DATABASE AUTHENTICATION ---
       Map<String, dynamic>? user = await DatabaseHelper.instance.loginUser(email, password);
 
       if (!mounted) return;
 
       if (user != null) {
-        // SUCCESS! Navigate to the wrapper and pass the DB row
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Welcome back, ${user['full_name']}!'), backgroundColor: Colors.green),
         );

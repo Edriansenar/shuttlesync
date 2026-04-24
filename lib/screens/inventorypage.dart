@@ -167,7 +167,6 @@ class _InventoryPageState extends State<InventoryPage> {
           
           const SizedBox(height: 10),
 
-          // --- Scrollable Inventory List ---
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 80.0), // Extra bottom padding for the FAB
@@ -183,7 +182,6 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
-  // --- Widget Builders ---
 
   Widget _buildSummaryCard(String title, String value, Color valueColor, Color cardColor) {
     return Container(
@@ -263,7 +261,6 @@ class _InventoryPageState extends State<InventoryPage> {
             ],
           ),
 
-          // --- Product Data Area ---
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(

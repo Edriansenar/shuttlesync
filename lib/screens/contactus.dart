@@ -13,7 +13,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  bool _isSending = false; // Prevents spam-clicking
+  bool _isSending = false; 
 
   @override
   void dispose() {
@@ -23,7 +23,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
     super.dispose();
   }
 
-  // --- DATABASE LOGIC: SEND MESSAGE ---
   void _sendMessage() async {
     String name = _nameController.text.trim();
     String email = _emailController.text.trim();
@@ -38,19 +37,17 @@ class _ContactUsPageState extends State<ContactUsPage> {
     }
 
     setState(() => _isSending = true);
-    FocusManager.instance.primaryFocus?.unfocus(); // Hides the keyboard
+    FocusManager.instance.primaryFocus?.unfocus(); 
 
-    // 2. Save to SQLite Database
     await DatabaseHelper.instance.insertContactMessage({
       'name': name,
       'email': email,
       'message': message,
-      'date_sent': DateTime.now().toIso8601String(), // Saves the exact time
+      'date_sent': DateTime.now().toIso8601String(), 
     });
 
     if (!mounted) return;
 
-    // 3. Clean up UI & Notify User
     setState(() => _isSending = false);
     _nameController.clear();
     _emailController.clear();
@@ -76,7 +73,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
         backgroundColor: bgColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        // --- FIXED: Back button pops correctly ---
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 20),
           onPressed: () => Navigator.pop(context), 
@@ -112,9 +108,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==========================================
-            // 1. HEADER SECTION
-            // ==========================================
             const Text(
               "CONNECT WITH SHUTTLESYNC",
               style: TextStyle(color: accentPink, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
@@ -143,9 +136,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
             ),
             const SizedBox(height: 32),
 
-            // ==========================================
-            // 2. CONTACT FORM
-            // ==========================================
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(20)),
@@ -167,7 +157,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   _buildTextField(controller: _messageController, hint: "Tell us how we can help you today...", fillColor: inputFillColor, maxLines: 4),
                   const SizedBox(height: 24),
 
-                  // Send Message Button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -202,9 +191,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
             ),
             const SizedBox(height: 32),
 
-            // ==========================================
-            // 3. CONTACT INFO CARDS
-            // ==========================================
             _buildContactCard(
               icon: Icons.location_on,
               title: "Location",
@@ -230,7 +216,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
             ),
             const SizedBox(height: 16),
             
-            // Socials Card
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
@@ -259,9 +244,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
             ),
             const SizedBox(height: 32),
 
-            // ==========================================
-            // 4. MAP PLACEHOLDER
-            // ==========================================
             Container(
               height: 180,
               width: double.infinity,
@@ -302,9 +284,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
             const Divider(color: Color(0xFF2A283C), height: 1),
             const SizedBox(height: 32),
 
-            // ==========================================
-            // 5. FAQ / BOTTOM LINKS
-            // ==========================================
+
             _buildFAQSection("Booking Issues?", "Check our instant court availability matrix for real-time status.", textGray),
             const SizedBox(height: 24),
             _buildFAQSection("Membership", "Join the Pro Tier for priority booking and equipment discounts.", textGray),
@@ -317,7 +297,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
     );
   }
 
-  // --- Helper Widgets ---
 
   Widget _buildFormLabel(String text, Color highlightColor) {
     return Text(

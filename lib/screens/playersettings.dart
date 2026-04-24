@@ -48,7 +48,6 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
       return;
     }
 
-    // Update the SQLite Database
     await DatabaseHelper.instance.updateUser(
       widget.currentUser!['user_id'], 
       newName, 
@@ -63,7 +62,7 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
       const SnackBar(content: Text('Credentials updated successfully!'), backgroundColor: Colors.green),
     );
     
-    Navigator.pop(context); // Go back to dashboard
+    Navigator.pop(context); 
   }
 
   @override

@@ -45,9 +45,6 @@ class _CourtBookingScreenState extends State<CourtBookingPage> {
     return courtPrice * hours;
   }
 
-  // ==========================================
-  // NEW: CONFIRMATION DIALOG
-  // ==========================================
   void _showConfirmationDialog() {
     if (widget.currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please log in to book a court.", style: TextStyle(color: Colors.white)), backgroundColor: Colors.red));
@@ -116,7 +113,6 @@ class _CourtBookingScreenState extends State<CourtBookingPage> {
       return;
     }
 
-    // Confirm & Save Booking to SQLite
     await DatabaseHelper.instance.insertBooking({
       'user_id': userId,
       'court_id': _selectedCourtId,
@@ -259,8 +255,6 @@ class _CourtBookingScreenState extends State<CourtBookingPage> {
       ),
     );
   }
-
-  // --- Widgets ---
 
   Widget _buildCalendarCard(Color darkCardColor, Color primaryPurple, String monthName) {
     int daysInMonth = DateUtils.getDaysInMonth(_today.year, _today.month);

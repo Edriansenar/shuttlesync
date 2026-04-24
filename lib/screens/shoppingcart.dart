@@ -124,12 +124,10 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                     child: Center(child: Text("Your cart is empty.", style: TextStyle(color: textGray, fontSize: 16))),
                   )
                 else
-                  // --- Cart Items ---
                   ...List.generate(_cartItems.length, (index) {
                     return _buildCartItem(_cartItems[index], index, darkCardColor, primaryPurple, accentPink, textGray);
                   }),
 
-                // --- Keep Browsing Button ---
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
@@ -203,7 +201,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     );
   }
 
-  // --- Helper Widgets ---
 
   Widget _buildCartItem(Map<String, dynamic> item, int index, Color darkCardColor, Color primaryPurple, Color accentPink, Color textGray) {
     double itemTotal = item['price'] * item['quantity'];

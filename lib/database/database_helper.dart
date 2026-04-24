@@ -4,17 +4,14 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 class DatabaseHelper {
-  // 1. Create a Singleton instance
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
 
   DatabaseHelper._init();
 
-  // 2. Open the database connection
   Future<Database> get database async {
     if (_database != null) return _database!;
     
-    // If it doesn't exist, initialize it
     _database = await _initDB('shuttlesync.db');
     return _database!;
   }
@@ -30,9 +27,7 @@ class DatabaseHelper {
     );
   }
 
-  // 3. Define your schema here
   Future _createDB(Database db, int version) async {
-    // Create the Users table
     await db.execute('''
       CREATE TABLE Users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +50,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create the Products table
     await db.execute('''
       CREATE TABLE Products (
         product_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +63,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create the Courts table
     await db.execute('''
       CREATE TABLE Courts (
         court_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +73,6 @@ class DatabaseHelper {
       )
     ''');
     
-    // --- SPRINT 2: BOOKINGS TABLE ---
     await db.execute('''
       CREATE TABLE Bookings (
         booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +107,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // --- SPRINT 1: SEED DEFAULT ADMIN ACCOUNT ---
     await db.insert('Users', {
       'full_name': 'Master Admin',
       'email': 'admin@shuttlesync.com',
@@ -127,21 +118,17 @@ class DatabaseHelper {
     });
   }
 
-  // --- CRUD Operations --- //
 
-  // Insert a new user (Sign Up)
   Future<int> insertUser(Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert('Users', row);
   }
 
-  // Fetch all products for the shop
   Future<List<Map<String, dynamic>>> getAllProducts() async {
     Database db = await instance.database;
     return await db.query('Products');
   }
 
-  // Login User Check
   Future<Map<String, dynamic>?> loginUser(String email, String password) async {
     Database db = await instance.database;
     List<Map<String, dynamic>> results = await db.query(
@@ -156,9 +143,6 @@ class DatabaseHelper {
     return null; 
   }
 
-  // --- SPRINT 2: BOOKING LOGIC & CONFLICT RESOLUTION --- //
-
-  // Checks if a court is already booked for a specific date and time
   Future<bool> isSlotAvailable(int courtId, String date, String time) async {
     Database db = await instance.database;
     List<Map> result = await db.query(
@@ -166,22 +150,19 @@ class DatabaseHelper {
       where: 'court_id = ? AND booking_date = ? AND start_time = ? AND status != ?',
       whereArgs: [courtId, date, time, 'CANCELLED'],
     );
-    return result.isEmpty; // Returns True if the slot is empty!
+    return result.isEmpty; 
   }
 
-  // Inserts the new booking into the database
   Future<int> insertBooking(Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert('Bookings', row);
   }
 
-  // Close the database safely
   Future close() async {
     final db = await instance.database;
     db.close();
   }
 
-  // --- SPRINT 2: CART FUNCTIONS ---
   
   Future<List<Map<String, dynamic>>> getCartItems(int userId) async {
     Database db = await instance.database;
@@ -195,7 +176,6 @@ class DatabaseHelper {
 
   Future<int> addToCart(int userId, int productId) async {
     Database db = await instance.database;
-    // Check if item is already in the cart
     List<Map<String, dynamic>> existing = await db.query('Cart', where: 'user_id = ? AND product_id = ?', whereArgs: [userId, productId]);
     if (existing.isNotEmpty) {
       int newQty = existing.first['quantity'] + 1;
@@ -219,7 +199,6 @@ class DatabaseHelper {
     Database db = await instance.database;
     return await db.delete('Cart', where: 'user_id = ?', whereArgs: [userId]);
   }
-  // --- SPRINT 2: UPDATE USER CREDENTIALS ---
   Future<int> updateUser(int userId, String fullName, String email, String password) async {
     Database db = await instance.database;
     return await db.update(
@@ -227,38 +206,32 @@ class DatabaseHelper {
       {
         'full_name': fullName,
         'email': email,
-        'password': password, // Note: In a real app, always hash passwords!
+        'password': password, 
       },
       where: 'user_id = ?',
       whereArgs: [userId],
     );
   }
-  // --- SPRINT 2: CONTACT SUPPORT ---
   Future<int> insertContactMessage(Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert('ContactMessages', row);
   }
 
-  // --- SPRINT 2: ADMIN MANAGEMENT ---
   
-  // Add a new product from the Admin Dashboard
   Future<int> insertProduct(Map<String, dynamic> product) async {
     Database db = await instance.database;
     return await db.insert('Products', product);
   }
 
-  // Get all bookings for a specific date (Format: YYYY-MM-DD)
   Future<List<Map<String, dynamic>>> getBookingsByDate(String date) async {
     Database db = await instance.database;
     return await db.query('Bookings', where: 'booking_date = ?', whereArgs: [date]);
   }
 
-  // Cancel a booking or block a court for maintenance
   Future<int> updateBookingStatus(int bookingId, String status) async {
     Database db = await instance.database;
     return await db.update('Bookings', {'status': status}, where: 'booking_id = ?', whereArgs: [bookingId]);
   }
-  // --- SPRINT 2: ADMIN INVENTORY MANAGEMENT ---
   Future<int> deleteProduct(int productId) async {
     Database db = await instance.database;
     return await db.delete('Products', where: 'product_id = ?', whereArgs: [productId]);

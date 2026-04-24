@@ -32,7 +32,6 @@ class _ShopPageState extends State<ShopPage> {
     List<Map<String, dynamic>> formattedProducts = dbProducts.map((row) {
       bool isLowStock = (row['stock_quantity'] as int) <= (row['low_stock_threshold'] as int);
 
-      // Map the image directly using the SKU from the database
       String imagePath = 'assets/img/${row['sku']}.png';
 
       return {

@@ -19,7 +19,7 @@ class AboutUsPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white70),
-          onPressed: () {}, // Opens drawer if connected
+          onPressed: () {}, 
         ),
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -27,7 +27,7 @@ class AboutUsPage extends StatelessWidget {
             Icon(Icons.sports_tennis, color: primaryPurple, size: 20),
             SizedBox(width: 8),
             Text(
-              "Nocturne Court", // Using the title from your mockup's app bar
+              "Nocturne Court", 
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -53,9 +53,7 @@ class AboutUsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==========================================
-            // 1. HERO & HERITAGE SECTION
-            // ==========================================
+
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -95,9 +93,6 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
 
-            // ==========================================
-            // 2. MISSION CARD
-            // ==========================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
@@ -129,9 +124,7 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
 
-            // ==========================================
-            // 3. CORE PRINCIPLES
-            // ==========================================
+
             Center(
               child: Column(
                 children: [
@@ -156,9 +149,6 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
 
-            // ==========================================
-            // 4. LEADERSHIP TEAM
-            // ==========================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
@@ -183,9 +173,7 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
 
-            // ==========================================
-            // 5. STATS & METRICS
-            // ==========================================
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
@@ -223,7 +211,6 @@ class AboutUsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Precision Focus Gradient Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
@@ -247,12 +234,9 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
 
-            // ==========================================
-            // 6. FOOTER
-            // ==========================================
             Container(
               width: double.infinity,
-              color: const Color(0xFF0A090F), // Slightly darker black for footer
+              color: const Color(0xFF0A090F), 
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +259,6 @@ class AboutUsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Links Columns
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -309,7 +292,7 @@ class AboutUsPage extends StatelessWidget {
                   const Center(
                     child: Text("© 2024 SHUTTLESYNC STUDIO. ALL RIGHTS RESERVED.", style: TextStyle(color: Color(0xFF4B495C), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
                   ),
-                  const SizedBox(height: 20), // Bottom padding
+                  const SizedBox(height: 20), 
                 ],
               ),
             ),
@@ -319,7 +302,6 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
-  // --- Helper Widgets ---
 
   Widget _buildPrincipleCard(String number, IconData icon, String title, String desc, Color darkCardColor, Color iconColor, Color textGray) {
     return Container(
@@ -328,7 +310,6 @@ class AboutUsPage extends StatelessWidget {
       decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(20)),
       child: Stack(
         children: [
-          // Background Number
           Positioned(
             right: 0,
             top: -10,
@@ -357,15 +338,13 @@ class AboutUsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Placeholder for the AI Portrait Images
         Container(
           height: 350,
           width: double.infinity,
           decoration: BoxDecoration(
             color: darkCardColor,
             borderRadius: BorderRadius.circular(20),
-            // TODO: When you have the images, replace the color above with this DecorationImage:
-            // image: DecorationImage(image: AssetImage('assets/your_image.png'), fit: BoxFit.cover),
+            image: DecorationImage(image: AssetImage('assets/court.jpeg'), fit: BoxFit.cover),
           ),
           child: Stack(
             children: [

@@ -251,7 +251,6 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
     );
   }
 
-  // --- Helper Widgets ---
 
   Widget _buildStatColumn(String rawValue, String label, {String? overrideText}) {
     return Column(
@@ -280,7 +279,6 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
     );
   }
 
-  // --- Views ---
 
   Widget _buildBookingsView(Color darkCardColor, Color primaryPurple, Color accentPink, Color textGray) {
     if (_isLoadingBookings) {
@@ -322,7 +320,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
               darkCardColor: darkCardColor,
             ),
           );
-        }), // FIXED: Added .toList() to prevent spread errors
+        }), 
 
         const SizedBox(height: 24),
         
