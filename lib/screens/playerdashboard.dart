@@ -26,7 +26,6 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
     _fetchMyBookings();
   }
 
-  // --- FETCH BOOKINGS & RETURN A FUTURE FOR THE PULL-TO-REFRESH ---
   Future<void> _fetchMyBookings() async {
     if (widget.currentUser == null) {
       setState(() => _isLoadingBookings = false);
@@ -130,16 +129,12 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
 
-      // ==========================================
-      // NEW: REFRESH INDICATOR WRAPPER
-      // Pull down to instantly load new bookings!
-      // ==========================================
       body: RefreshIndicator(
-        onRefresh: _fetchMyBookings, // Calls the database when pulled
+        onRefresh: _fetchMyBookings, 
         color: primaryPurple,
         backgroundColor: darkCardColor,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // Important: Allows pull-to-refresh even if the screen isn't full
+          physics: const AlwaysScrollableScrollPhysics(), 
           padding: const EdgeInsets.only(bottom: 80.0), 
           child: Column(
             children: [

@@ -22,9 +22,22 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, 
       onCreate: _createDB,
+      onUpgrade: _onUpgrade, 
     );
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS Users');
+      await db.execute('DROP TABLE IF EXISTS Cart');
+      await db.execute('DROP TABLE IF EXISTS Products');
+      await db.execute('DROP TABLE IF EXISTS Courts');
+      await db.execute('DROP TABLE IF EXISTS Bookings');
+      await db.execute('DROP TABLE IF EXISTS ContactMessages');
+      await _createDB(db, newVersion);
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -44,9 +57,9 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE Cart (
         cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        product_id INTEGER,
-        quantity INTEGER
+        user_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER NOT NULL
       )
     ''');
 
@@ -86,18 +99,6 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE Bookings (
-        booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        court_id INTEGER,
-        booking_date TEXT,
-        start_time TEXT,
-        duration_minutes INTEGER,
-        status TEXT
-      )
-    ''');
-
-    await db.execute('''
       CREATE TABLE ContactMessages (
         message_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
@@ -117,7 +118,6 @@ class DatabaseHelper {
       'matches_played': 999
     });
   }
-
 
   Future<int> insertUser(Map<String, dynamic> row) async {
     Database db = await instance.database;
@@ -162,7 +162,6 @@ class DatabaseHelper {
     final db = await instance.database;
     db.close();
   }
-
   
   Future<List<Map<String, dynamic>>> getCartItems(int userId) async {
     Database db = await instance.database;
@@ -199,6 +198,7 @@ class DatabaseHelper {
     Database db = await instance.database;
     return await db.delete('Cart', where: 'user_id = ?', whereArgs: [userId]);
   }
+  
   Future<int> updateUser(int userId, String fullName, String email, String password) async {
     Database db = await instance.database;
     return await db.update(
@@ -212,11 +212,11 @@ class DatabaseHelper {
       whereArgs: [userId],
     );
   }
+
   Future<int> insertContactMessage(Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert('ContactMessages', row);
   }
-
   
   Future<int> insertProduct(Map<String, dynamic> product) async {
     Database db = await instance.database;
@@ -232,6 +232,7 @@ class DatabaseHelper {
     Database db = await instance.database;
     return await db.update('Bookings', {'status': status}, where: 'booking_id = ?', whereArgs: [bookingId]);
   }
+
   Future<int> deleteProduct(int productId) async {
     Database db = await instance.database;
     return await db.delete('Products', where: 'product_id = ?', whereArgs: [productId]);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; 
 import 'package:shuttlesync/database/database_helper.dart';
 import 'package:shuttlesync/screens/analyticspage.dart';
+import 'package:shuttlesync/screens/loginpage.dart';
 
 class AdminDashboard extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -14,13 +15,14 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  // Form Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
   String _selectedCategory = "Apparel";
   File? _selectedImage;
   bool _isPublishing = false;
+  
+  bool _isPickingImage = false; 
 
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _todaysBookings = [];
@@ -43,7 +45,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _stockController.dispose();
     super.dispose();
   }
-
 
   void _fetchInventory() async {
     setState(() => _isLoadingInventory = true);
@@ -112,9 +113,28 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) setState(() => _selectedImage = File(image.path));
+    if (_isPickingImage) return; // Prevent double-taps
+
+    setState(() {
+      _isPickingImage = true;
+    });
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null && mounted) {
+        setState(() => _selectedImage = File(image.path));
+      }
+    } catch (e) {
+      debugPrint("Image picker error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPickingImage = false;
+        });
+      }
+    }
   }
 
   void _publishProduct() async {
@@ -145,10 +165,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
       _stockController.clear();
     });
 
-    _fetchInventory(); // Instantly update the inventory UI!
+    _fetchInventory(); 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product Published to Store!'), backgroundColor: Colors.green));
   }
-
 
   void _fetchSchedule() async {
     setState(() => _isLoadingSchedule = true);
@@ -247,6 +266,42 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
   }
 
+void _logout() {
+    // 1. Hide the keyboard to prevent layout crashes
+    FocusScope.of(context).unfocus();
+
+    // 2. Capture the navigator state safely BEFORE destroying any screens
+    final navigator = Navigator.of(context, rootNavigator: true);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1B1A24),
+        title: const Text("Logout?", style: TextStyle(color: Colors.white)),
+        content: const Text("Are you sure you want to log out of the Admin Console?", style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext), 
+            child: const Text("Cancel", style: TextStyle(color: Colors.white54))
+          ),
+          TextButton(
+            onPressed: () {
+              // 3. Close the dialog gracefully
+              Navigator.pop(dialogContext);
+              
+              // 4. Pop everything down to the very first screen 
+              // (This prevents the WindowOnBackDispatcher crash!)
+              navigator.popUntil((route) => route.isFirst);
+              
+              // 5. Swap the remaining first screen with the Login Page
+              navigator.pushReplacementNamed('/login');
+            }, 
+            child: const Text("Logout", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,10 +323,25 @@ class _AdminDashboardState extends State<AdminDashboard> {
         scrolledUnderElevation: 0,
         leading: const Padding(padding: EdgeInsets.all(12.0), child: Icon(Icons.shield_moon, color: primaryPurple, size: 24)),
         title: const Text("Command Center", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primaryPurple)),
+        // ADDED: Avatar and Logout button array updated
         actions: [
           Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: CircleAvatar(
+              backgroundColor: const Color(0xFF2E2A44), 
+              child: Text(
+                firstName.isNotEmpty ? firstName[0].toUpperCase() : 'A', 
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)
+              )
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(backgroundColor: const Color(0xFF2E2A44), child: Text(firstName[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
+            child: IconButton(
+              icon: const Icon(Icons.logout, color: Colors.redAccent),
+              tooltip: 'Logout',
+              onPressed: _logout, // Triggers our new logout function
+            ),
           ),
         ],
       ),
@@ -358,7 +428,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: _isPickingImage ? null : _pickImage,
                     child: Container(
                       width: double.infinity, height: 160,
                       decoration: BoxDecoration(color: const Color(0xFF110F18), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white24, width: 1, style: BorderStyle.solid)),
