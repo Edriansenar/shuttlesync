@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:shuttlesync/screens/registerpage.dart';
 import 'package:shuttlesync/screens/main_navigation.dart';
 import 'package:shuttlesync/database/database_helper.dart'; 
@@ -13,10 +14,13 @@ class LoginPage extends StatefulWidget {
 class _LoginScreenState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false; 
+  
+  // BAGONG STATE: Para sa show/hide password
+  bool _isPasswordVisible = false;
 
   void _loginUser() async {
     String email = _emailController.text.trim().toLowerCase();
-    
     String password = _passwordController.text.trim(); 
 
     if (email.isEmpty || password.isEmpty) {
@@ -26,12 +30,17 @@ class _LoginScreenState extends State<LoginPage> {
       return;
     }
 
+    setState(() => _isLoading = true);
+
     try {
-      Map<String, dynamic>? user = await DatabaseHelper.instance.loginUser(email, password);
+      final user = await DatabaseHelper.instance.loginUser(email, password);
 
       if (!mounted) return;
 
       if (user != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('saved_user_id', user['user_id']);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Welcome back, ${user['full_name']}!'), backgroundColor: Colors.green),
         );
@@ -44,13 +53,14 @@ class _LoginScreenState extends State<LoginPage> {
           (Route<dynamic> route) => false, 
         );
       } else {
-        // FAILED!
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid email or password.'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Incorrect email or password.'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (!mounted) return;
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Database Error: $e'), backgroundColor: Colors.red),
       );
@@ -85,7 +95,8 @@ class _LoginScreenState extends State<LoginPage> {
                     child: const Icon(Icons.sports_tennis, size: 40, color: Color(0xFFD49CFF)),
                   ),
                   const SizedBox(height: 32),
-                  const Text("THE NEON VELOCITY", style: TextStyle(color: Colors.white70, fontSize: 14, letterSpacing: 2.5, fontWeight: FontWeight.w600)),
+                  // INAYOS: Binago ang "THE NEON VELOCITY"
+                  const Text("WELCOME TO SHUTTLESYNC", style: TextStyle(color: Colors.white70, fontSize: 14, letterSpacing: 2.5, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 48),
 
                   Container(
@@ -99,9 +110,9 @@ class _LoginScreenState extends State<LoginPage> {
                         
                         TextField(
                           controller: _emailController,
-                          keyboardType: TextInputType.emailAddress, // Added to show email keyboard
+                          keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(filled: true, fillColor: const Color(0xFF2A283C), prefixIcon: const Icon(Icons.email_outlined, color: Colors.white54, size: 20), hintText: "admin@shuttlesync.com", hintStyle: const TextStyle(color: Colors.white38), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(vertical: 18)),
+                          decoration: InputDecoration(filled: true, fillColor: const Color(0xFF2A283C), prefixIcon: const Icon(Icons.email_outlined, color: Colors.white54, size: 20), hintText: "athlete@shuttlesync.com", hintStyle: const TextStyle(color: Colors.white38), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(vertical: 18)),
                         ),
                         const SizedBox(height: 24),
 
@@ -118,11 +129,28 @@ class _LoginScreenState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 10),
                         
+                        // INAYOS: Nilagyan ng Eye Icon Toggle para sa Show/Hide Password
                         TextField(
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: !_isPasswordVisible, // Dynamic na ngayon
                           style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(filled: true, fillColor: const Color(0xFF2A283C), prefixIcon: const Icon(Icons.lock_outline, color: Colors.white54, size: 20), hintText: "password", hintStyle: const TextStyle(color: Colors.white38), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(vertical: 18)),
+                          decoration: InputDecoration(
+                            filled: true, 
+                            fillColor: const Color(0xFF2A283C), 
+                            prefixIcon: const Icon(Icons.lock_outline, color: Colors.white54, size: 20), 
+                            hintText: "password", 
+                            hintStyle: const TextStyle(color: Colors.white38), 
+                            suffixIcon: IconButton(
+                              icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white54, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), 
+                            contentPadding: const EdgeInsets.symmetric(vertical: 18)
+                          ),
                         ),
                         const SizedBox(height: 32),
 
@@ -130,16 +158,18 @@ class _LoginScreenState extends State<LoginPage> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: _loginUser, 
+                            onPressed: _isLoading ? null : _loginUser, 
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB161FF), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), elevation: 0),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("ENTER COURT", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, size: 20),
-                              ],
-                            ),
+                            child: _isLoading 
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("ENTER COURT", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.arrow_forward, size: 20),
+                                  ],
+                                ),
                           ),
                         ),
                         const SizedBox(height: 24),

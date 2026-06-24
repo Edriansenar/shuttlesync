@@ -35,23 +35,22 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     try {
-      Map<String, dynamic> newUser = {
+      await DatabaseHelper.instance.insertUser({
         'full_name': name,
         'email': email,
         'phone_number': phone,
         'password_hash': password, 
         'role': 'player',          
         'win_rate': 0.0,
-        'matches_played': 0
-      };
-
-      await DatabaseHelper.instance.insertUser(newUser);
+        'matches_played': 0,
+      });
 
       if (!mounted) return;
       
+      // INAYOS: Dinagdag yung suggestion mong prompt!
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registration Successful! A welcome email has been sent to your inbox.'), 
+          content: Text('Registration Successful! Welcome to the court. Now, login your account!'), 
           backgroundColor: Colors.green,
           duration: Duration(seconds: 4),
         ),
@@ -62,10 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration failed. Email might already be in use.'), 
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('An account already exists for that email.'), backgroundColor: Colors.red),
       );
     }
   }
@@ -124,7 +120,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         _buildFieldHeader("PHONE NUMBER"),
                         const SizedBox(height: 10),
-                        _buildInputField(icon: Icons.phone_outlined, hintText: "+1 (555) 000-0000", fillColor: inputFillColor, hintGray: hintGray, controller: _phoneController, keyboardType: TextInputType.phone), 
+                        // INAYOS: Ginawang Philippine Format
+                        _buildInputField(icon: Icons.phone_outlined, hintText: "+63 912 345 6789", fillColor: inputFillColor, hintGray: hintGray, controller: _phoneController, keyboardType: TextInputType.phone), 
                         const SizedBox(height: 24),
 
                         _buildFieldHeader("PASSWORD"),

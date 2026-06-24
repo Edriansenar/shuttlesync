@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:shuttlesync/database/database_helper.dart'; 
 import 'package:shuttlesync/screens/shoppingcart.dart'; 
 import 'package:shuttlesync/screens/playersettings.dart';
@@ -20,10 +21,46 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
   List<Map<String, dynamic>> _myBookings = [];
   bool _isLoadingBookings = true;
 
+  List<Map<String, dynamic>> _myOrders = [];
+  bool _isLoadingOrders = true;
+
   @override
   void initState() {
     super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
     _fetchMyBookings();
+    _fetchMySuccessfulOrders();
+  }
+
+  Future<void> _fetchMySuccessfulOrders() async {
+    if (widget.currentUser == null) {
+      setState(() => _isLoadingOrders = false);
+      return;
+    }
+    int userId = widget.currentUser!['user_id'];
+    
+    try {
+      final db = await DatabaseHelper.instance.database;
+      // Fetch ALL orders so the user can track PENDING orders too
+      final List<Map<String, dynamic>> localOrders = await db.query(
+        'Orders',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+        orderBy: 'order_id DESC',
+      );
+      
+      if (!mounted) return;
+      setState(() {
+        _myOrders = List<Map<String, dynamic>>.from(localOrders);
+        _isLoadingOrders = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingOrders = false);
+    }
   }
 
   Future<void> _fetchMyBookings() async {
@@ -31,25 +68,31 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
       setState(() => _isLoadingBookings = false);
       return;
     }
-
     int userId = widget.currentUser!['user_id'];
-    final db = await DatabaseHelper.instance.database;
     
-    List<Map<String, dynamic>> bookings = await db.query(
-      'Bookings',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'booking_date DESC, start_time DESC', 
-    );
+    try {
+      final db = await DatabaseHelper.instance.database;
+      final List<Map<String, dynamic>> localBookings = await db.query(
+        'Bookings',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+        orderBy: 'booking_date DESC, start_time DESC', 
+      );
 
-    if (!mounted) return;
-    
-    setState(() {
-      _myBookings = bookings;
-      _isLoadingBookings = false;
-    });
+      if (!mounted) return;
+      setState(() {
+        _myBookings = List<Map<String, dynamic>>.from(localBookings);
+        _isLoadingBookings = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingBookings = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading bookings: $e"), backgroundColor: Colors.red),
+      );
+    }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     const bgColor = Color(0xFF0F0E17);
@@ -82,10 +125,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
             ),
           ),
         ),
-        title: const Text(
-          "SHUTTLESYNC",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: primaryPurple),
-        ),
+        title: const Text("SHUTTLESYNC", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: primaryPurple)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -103,6 +143,10 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
               } else if (value == 'contact') {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const ContactUsPage()));
               } else if (value == 'logout') {
+                
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+
                 await Future.delayed(const Duration(milliseconds: 150));
                 if (context.mounted) {
                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
@@ -122,15 +166,8 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
           const SizedBox(width: 8), 
         ],
       ),
-      
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("New action initiated!"))),
-        backgroundColor: primaryPurple,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-
       body: RefreshIndicator(
-        onRefresh: _fetchMyBookings, 
+        onRefresh: _fetchDashboardData, 
         color: primaryPurple,
         backgroundColor: darkCardColor,
         child: SingleChildScrollView(
@@ -143,36 +180,19 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
                 child: Stack(
                   children: [
                     Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: primaryPurple, width: 3),
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryPurple, width: 3)),
                       child: CircleAvatar(
                         radius: 50,
                         backgroundColor: const Color(0xFF2E2A44),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/img/profile.png', 
-                            width: 100, height: 100, fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 50, color: Colors.white30),
-                          ),
-                        ),
+                        child: ClipOval(child: Image.asset('assets/img/profile.png', width: 100, height: 100, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 50, color: Colors.white30))),
                       ),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: accentPink, borderRadius: BorderRadius.circular(12)),
-                        child: const Text("ELITE", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                      ),
-                    ),
+                    Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: accentPink, borderRadius: BorderRadius.circular(12)), child: const Text("ELITE", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0)))),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-              const Text("PRO PLAYER", style: TextStyle(color: accentPink, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2.0)),
+              const Text("TOURNAMENT CHAMPION", style: TextStyle(color: accentPink, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2.0)),
               const SizedBox(height: 8),
               Text(fullName, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 24),
@@ -193,25 +213,14 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerSettingsPage(currentUser: widget.currentUser)));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryPurple,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerSettingsPage(currentUser: widget.currentUser))),
+                    style: ElevatedButton.styleFrom(backgroundColor: primaryPurple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
                     child: const Text("Edit Profile", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
                   Container(
                     decoration: const BoxDecoration(color: Color(0xFF2A283C), shape: BoxShape.circle),
-                    child: IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.white70),
-                      onPressed: () {
-                         Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerSettingsPage(currentUser: widget.currentUser)));
-                      },
-                    ),
+                    child: IconButton(icon: const Icon(Icons.settings, color: Colors.white70), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerSettingsPage(currentUser: widget.currentUser)))),
                   ),
                 ],
               ),
@@ -227,10 +236,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Divider(color: Color(0xFF2A283C), height: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 24.0), child: Divider(color: Color(0xFF2A283C), height: 1)),
               const SizedBox(height: 24),
 
               Padding(
@@ -245,7 +251,6 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
       ),
     );
   }
-
 
   Widget _buildStatColumn(String rawValue, String label, {String? overrideText}) {
     return Column(
@@ -265,26 +270,19 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
         children: [
           Text(title, style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF8D8E98), fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 8),
-          Container(
-            height: 3, width: 40,
-            decoration: BoxDecoration(color: isSelected ? accentPink : Colors.transparent, borderRadius: BorderRadius.circular(2)),
-          )
+          Container(height: 3, width: 40, decoration: BoxDecoration(color: isSelected ? accentPink : Colors.transparent, borderRadius: BorderRadius.circular(2)))
         ],
       ),
     );
   }
 
-
   Widget _buildBookingsView(Color darkCardColor, Color primaryPurple, Color accentPink, Color textGray) {
     if (_isLoadingBookings) {
       return const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()));
     }
-
     if (_myBookings.isEmpty) {
       return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
+        width: double.infinity, padding: const EdgeInsets.all(40), decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
         child: const Column(
           children: [
             Icon(Icons.sports_tennis, size: 40, color: Colors.white24),
@@ -303,29 +301,33 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
         ..._myBookings.map((booking) {
           Color iconColor = booking['status'] == 'CONFIRMED' ? primaryPurple : textGray;
           
+          String courtTitle;
+          switch(booking['court_id']) {
+            case 1: courtTitle = "Championship Court 1"; break;
+            case 2: courtTitle = "Championship Court 2"; break;
+            case 3: courtTitle = "Standard Court 3"; break;
+            case 4: courtTitle = "Standard Court 4"; break;
+            case 5: courtTitle = "Practice Court 5"; break;
+            case 6: courtTitle = "Practice Court 6"; break;
+            default: courtTitle = "Court ${booking['court_id']}";
+          }
+          
           return Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: _buildBookingCard(
-              courtName: "Court ${booking['court_id']} - Neon Arena", 
-              location: "Duration: ${booking['duration_minutes']} min",
+              courtName: courtTitle, 
+              location: "ShuttleSync Arena  •  ${booking['duration_minutes']} min", 
               date: booking['booking_date'], 
               time: booking['start_time'], 
               status: booking['status'], 
-              iconColor: iconColor,
-              darkCardColor: darkCardColor,
+              iconColor: iconColor, 
+              darkCardColor: darkCardColor
             ),
           );
-        }), 
-
+        }),
         const SizedBox(height: 24),
-        
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: darkCardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border(left: BorderSide(color: accentPink, width: 4)),
-          ),
+          padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16), border: Border(left: BorderSide(color: accentPink, width: 4))),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -334,13 +336,8 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
               Text("You've played ${_myBookings.length} sessions. Keep booking to reach 'Legendary' status!", style: TextStyle(color: textGray, fontSize: 13, height: 1.4)),
               const SizedBox(height: 20),
               Container(
-                height: 8, width: double.infinity,
-                decoration: BoxDecoration(color: const Color(0xFF110F18), borderRadius: BorderRadius.circular(4)),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: 0.4,
-                  child: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [primaryPurple, accentPink]), borderRadius: BorderRadius.circular(4))),
-                ),
+                height: 8, width: double.infinity, decoration: BoxDecoration(color: const Color(0xFF110F18), borderRadius: BorderRadius.circular(4)),
+                child: FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: 0.4, child: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [primaryPurple, accentPink]), borderRadius: BorderRadius.circular(4)))),
               ),
             ],
           ),
@@ -349,19 +346,9 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
     );
   }
 
-  Widget _buildBookingCard({
-    required String courtName,
-    required String location,
-    required String date,
-    required String time,
-    required String status,
-    required Color iconColor,
-    Color titleColor = Colors.white,
-    required Color darkCardColor,
-  }) {
+  Widget _buildBookingCard({required String courtName, required String location, required String date, required String time, required String status, required Color iconColor, Color titleColor = Colors.white, required Color darkCardColor}) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))]),
+      padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -369,11 +356,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(Icons.sports_tennis, color: iconColor, size: 24),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: const Color(0xFF332A4C), borderRadius: BorderRadius.circular(6)),
-                child: Text(status, style: TextStyle(color: iconColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-              ),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF332A4C), borderRadius: BorderRadius.circular(6)), child: Text(status, style: TextStyle(color: iconColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
             ],
           ),
           const SizedBox(height: 16),
@@ -384,36 +367,61 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
           Row(children: [const Icon(Icons.calendar_today, color: Colors.white54, size: 16), const SizedBox(width: 8), Text(date, style: const TextStyle(color: Colors.white, fontSize: 13))]),
           const SizedBox(height: 12),
           Row(children: [const Icon(Icons.access_time, color: Colors.white54, size: 16), const SizedBox(width: 8), Text(time, style: const TextStyle(color: Colors.white, fontSize: 13))]),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("MANAGE", style: TextStyle(color: iconColor, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF2A283C), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.qr_code, color: Colors.white70, size: 20)),
-            ],
-          ),
         ],
       ),
     );
   }
 
   Widget _buildOrdersView(Color darkCardColor, Color primaryPurple, Color accentPink, Color textGray) {
+    if (_isLoadingOrders) {
+      return const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()));
+    }
+    if (_myOrders.isEmpty) {
+      return Container(
+        width: double.infinity, padding: const EdgeInsets.all(40), decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
+        child: const Column(
+          children: [
+            Icon(Icons.shopping_bag_outlined, size: 40, color: Colors.white24),
+            SizedBox(height: 16),
+            Text("No purchases found.", style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text("Your gear purchases will appear here.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 14)),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Recent Orders", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text("Purchase History", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
         const SizedBox(height: 16),
-        _buildOrderCard(orderNum: "SYNC-8892", item: "Volt-Striker Carbon Racket (x1)", date: "Oct 20, 2023", price: "\$189.00", payment: "PAID VIA APPLE PAY", status: "IN TRANSIT", action: "TRACK PACKAGE", icon: Icons.shopping_cart_outlined, statusColor: accentPink, darkCardColor: darkCardColor),
-        const SizedBox(height: 16),
-        _buildOrderCard(orderNum: "SYNC-8410", item: "Pro Grip Tape (x3), Shuttlecocks (x12)", date: "Oct 12, 2023", price: "\$54.50", payment: "PAID VIA VISA", status: "DELIVERED", action: "VIEW RECEIPT", icon: Icons.inventory_2_outlined, statusColor: textGray, darkCardColor: darkCardColor),
+        ..._myOrders.map((order) {
+          String cleanDate = order['order_date'].toString().split('T')[0];
+          bool isPending = order['status'] == 'PENDING';
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: _buildOrderCard(
+              orderNum: "SYNC-${order['order_id']}", 
+              item: "Pro Shop Transaction", 
+              date: cleanDate, 
+              price: "₱${order['total_amount'].toStringAsFixed(2)}", 
+              payment: isPending ? "AWAITING PAYMENT" : "PAID IN CASH", 
+              status: order['status'], 
+              icon: Icons.inventory_2_outlined, 
+              statusColor: isPending ? Colors.orangeAccent : Colors.greenAccent, 
+              darkCardColor: darkCardColor
+            ),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildOrderCard({required String orderNum, required String item, required String date, required String price, required String payment, required String status, required String action, required IconData icon, required Color statusColor, required Color darkCardColor}) {
+  Widget _buildOrderCard({required String orderNum, required String item, required String date, required String price, required String payment, required String status, required IconData icon, required Color statusColor, required Color darkCardColor}) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
+      padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: darkCardColor, borderRadius: BorderRadius.circular(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -427,7 +435,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
                 const SizedBox(height: 6),
                 Text(item, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold, height: 1.4)),
                 const SizedBox(height: 4),
-                Text("Ordered on $date", style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 11)),
+                Text("Date: $date", style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 11)),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -437,14 +445,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [Text(price, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 2), Text(payment, style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5))],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(children: [CircleAvatar(radius: 3, backgroundColor: statusColor), const SizedBox(width: 4), Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0))]),
-                        const SizedBox(height: 8),
-                        Text(action, style: const TextStyle(color: Color(0xFFBB6AFB), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                      ],
-                    ),
+                    Row(children: [CircleAvatar(radius: 3, backgroundColor: statusColor), const SizedBox(width: 4), Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0))]),
                   ],
                 ),
               ],

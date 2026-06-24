@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:io'; 
 import 'package:shuttlesync/screens/loginpage.dart';
 import 'package:shuttlesync/screens/registerpage.dart';
 import 'package:shuttlesync/screens/shoppingcart.dart';
 import 'package:shuttlesync/screens/playerdashboard.dart';
+import 'package:shuttlesync/screens/courtbooking.dart'; 
+import 'package:shuttlesync/screens/ecommercepage.dart'; 
+import 'package:shuttlesync/database/database_helper.dart'; 
 
 class HomePage extends StatelessWidget {
   final Map<String, dynamic>? currentUser;
@@ -105,11 +109,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               
               const SizedBox(height: 32),
-              const QuickBookCard(),
+              QuickBookCard(currentUser: widget.currentUser),
               const SizedBox(height: 32),
-              const UpcomingSessionsSection(),
+
+              // DYNAMIC UPCOMING SESSIONS
+              UpcomingSessionsSection(currentUser: widget.currentUser!),
               const SizedBox(height: 32),
-              const ProShopDropsSection(),
+              
+              // DYNAMIC PRO SHOP DROPS
+              ProShopDropsSection(currentUser: widget.currentUser),
               const SizedBox(height: 24), 
             ],
           ),
@@ -179,7 +187,7 @@ class ShuttleSyncHeader extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white70),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShoppingCartScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen(currentUser: currentUser)));
           },
         ),
       ],
@@ -242,7 +250,9 @@ class StatCard extends StatelessWidget {
 }
 
 class QuickBookCard extends StatelessWidget {
-  const QuickBookCard({super.key});
+  final Map<String, dynamic>? currentUser;
+
+  const QuickBookCard({super.key, this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -259,34 +269,17 @@ class QuickBookCard extends StatelessWidget {
         children: [
           const Text("Secure Your Court", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 8),
-          const Text("Prime time slots at Neon Arena are filling up fast for this evening.", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 15, height: 1.4)),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(color: const Color(0xFF111226), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF2E3047), width: 1)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("Tonight", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 13)),
-                    SizedBox(height: 4),
-                    Text("19:00 - 21:00", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                ),
-                Icon(Icons.access_time, color: primaryColor),
-              ],
-            ),
-          ),
+          const Text("Reserve your slot ahead of time at ShuttleSync Arena.", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 15, height: 1.4)),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Quick booking initiated!"))),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => CourtBookingPage(currentUser: currentUser)));
+              },
               style: ElevatedButton.styleFrom(backgroundColor: primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), elevation: 0),
-              child: const Text("Quick Book", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              child: const Text("Go to Reservations", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -295,34 +288,95 @@ class QuickBookCard extends StatelessWidget {
   }
 }
 
-class UpcomingSessionsSection extends StatelessWidget {
-  const UpcomingSessionsSection({super.key});
+// --- NEW: DYNAMIC UPCOMING SESSIONS ---
+class UpcomingSessionsSection extends StatefulWidget {
+  final Map<String, dynamic> currentUser;
+  const UpcomingSessionsSection({super.key, required this.currentUser});
+
+  @override
+  State<UpcomingSessionsSection> createState() => _UpcomingSessionsSectionState();
+}
+
+class _UpcomingSessionsSectionState extends State<UpcomingSessionsSection> {
+  List<Map<String, dynamic>> _mySessions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUpcomingSessions();
+  }
+
+  void _fetchUpcomingSessions() async {
+    int userId = widget.currentUser['user_id'];
+    try {
+      final db = await DatabaseHelper.instance.database;
+      final List<Map<String, dynamic>> localBookings = await db.query(
+        'Bookings',
+        where: 'user_id = ? AND status != ?',
+        whereArgs: [userId, 'CANCELLED'],
+        orderBy: 'booking_date ASC, start_time ASC', 
+      );
+      if (!mounted) return;
+      setState(() {
+        _mySessions = List<Map<String, dynamic>>.from(localBookings);
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(title: "Upcoming Sessions", actionText: "VIEW ALL", onPressed: () {}),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: 2,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) => const UpcomingSessionCard(),
-          ),
+        SectionTitle(
+          title: "Upcoming Sessions", 
+          actionText: "VIEW ALL", 
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerDashboard(currentUser: widget.currentUser)))
         ),
+        const SizedBox(height: 16),
+        _isLoading 
+          ? const Center(child: CircularProgressIndicator())
+          : _mySessions.isEmpty
+            ? Container(
+                width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: const Color(0xFF1D1E33), borderRadius: BorderRadius.circular(18)),
+                child: const Center(child: Text("You have no upcoming bookings.", style: TextStyle(color: Colors.white54)))
+              )
+            : SizedBox(
+                height: 180,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _mySessions.length,
+                  separatorBuilder: (context, index) => const SizedBox(width: 16),
+                  itemBuilder: (context, index) => UpcomingSessionCard(booking: _mySessions[index]),
+                ),
+              ),
       ],
     );
   }
 }
 
 class UpcomingSessionCard extends StatelessWidget {
-  const UpcomingSessionCard({super.key});
+  final Map<String, dynamic> booking;
+  const UpcomingSessionCard({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context) {
+    String courtTitle;
+    switch(booking['court_id']) {
+      case 1: courtTitle = "Championship Court 1"; break;
+      case 2: courtTitle = "Championship Court 2"; break;
+      case 3: courtTitle = "Standard Court 3"; break;
+      case 4: courtTitle = "Standard Court 4"; break;
+      case 5: courtTitle = "Practice Court 5"; break;
+      case 6: courtTitle = "Practice Court 6"; break;
+      default: courtTitle = "Court ${booking['court_id']}";
+    }
+
     return Container(
       width: 300,
       padding: const EdgeInsets.all(20.0),
@@ -340,7 +394,7 @@ class UpcomingSessionCard extends StatelessWidget {
                   children: [
                     CircleAvatar(radius: 3, backgroundColor: Theme.of(context).primaryColor),
                     const SizedBox(width: 6),
-                    Text("Confirmed", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(booking['status'], style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -348,9 +402,9 @@ class UpcomingSessionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text("Neon Arena - Court 4", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(courtTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 4),
-          const Text("Doubles Match • Competitive", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 14)),
+          Text("Duration: ${booking['duration_minutes']} min", style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 14)),
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -360,11 +414,9 @@ class UpcomingSessionCard extends StatelessWidget {
                   CircleAvatar(radius: 12, backgroundColor: Color(0xFF2E3047), child: Icon(Icons.person, size: 16, color: Colors.white70)),
                   SizedBox(width: -8),
                   CircleAvatar(radius: 12, backgroundColor: Color(0xFF3E4057), child: Icon(Icons.person, size: 16, color: Colors.white70)),
-                  SizedBox(width: 8),
-                  Text("+1", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 14)),
                 ],
               ),
-              Text("Tomorrow, 18:00", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text("${booking['booking_date']} @ ${booking['start_time']}", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 12)),
             ],
           ),
         ],
@@ -373,25 +425,63 @@ class UpcomingSessionCard extends StatelessWidget {
   }
 }
 
-class ProShopDropsSection extends StatelessWidget {
-  const ProShopDropsSection({super.key});
+// --- DYNAMIC PRO SHOP DROPS ---
+class ProShopDropsSection extends StatefulWidget {
+  final Map<String, dynamic>? currentUser;
+  const ProShopDropsSection({super.key, this.currentUser});
+
+  @override
+  State<ProShopDropsSection> createState() => _ProShopDropsSectionState();
+}
+
+class _ProShopDropsSectionState extends State<ProShopDropsSection> {
+  List<Map<String, dynamic>> _latestProducts = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLatestProducts();
+  }
+
+  void _fetchLatestProducts() async {
+    final products = await DatabaseHelper.instance.getAllProducts();
+    if (!mounted) return;
+    setState(() {
+      _latestProducts = products.reversed.take(3).toList();
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(title: "Pro Shop Drops", actionText: "EXPLORE STORE", onPressed: () {}),
+        SectionTitle(
+          title: "Pro Shop Drops", 
+          actionText: "EXPLORE STORE", 
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShopPage(currentUser: widget.currentUser)));
+          }
+        ),
         const SizedBox(height: 16),
         SizedBox(
           height: 300, 
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: const [
-              ProShopProductCard(),
-              SizedBox(width: 16),
-              CompactProductList(),
-            ],
-          ),
+          child: _isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : _latestProducts.isEmpty 
+              ? const Center(child: Text("No items available in the shop.", style: TextStyle(color: Colors.white54)))
+              : ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    if (_latestProducts.isNotEmpty) 
+                      ProShopProductCard(product: _latestProducts[0]),
+                    const SizedBox(width: 16),
+                    if (_latestProducts.length > 1) 
+                      CompactProductList(products: _latestProducts.sublist(1)),
+                  ],
+                ),
         ),
       ],
     );
@@ -399,10 +489,14 @@ class ProShopDropsSection extends StatelessWidget {
 }
 
 class ProShopProductCard extends StatelessWidget {
-  const ProShopProductCard({super.key});
+  final Map<String, dynamic> product;
+
+  const ProShopProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    String? imgPath = product['image_path'];
+
     return Container(
       width: 200,
       decoration: BoxDecoration(color: const Color(0xFF1D1E33), borderRadius: BorderRadius.circular(18)),
@@ -417,11 +511,9 @@ class ProShopProductCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18)),
-              child: Image.asset(
-                'assets/img/RKT-001.png', 
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.sports_tennis, size: 80, color: Colors.white10)),
-              ),
+              child: imgPath != null && imgPath.isNotEmpty
+                  ? Image.file(File(imgPath), fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.broken_image, color: Colors.white30, size: 40))
+                  : const Center(child: Icon(Icons.sports_tennis, size: 80, color: Colors.white10)),
             ),
           ),
           Padding(
@@ -435,11 +527,11 @@ class ProShopProductCard extends StatelessWidget {
                   child: const Text("NEW ARRIVAL", style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 10),
-                const Text("AeroStrike Pro X", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(product['name'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                 const SizedBox(height: 4),
-                const Text("Engineered for extreme...", style: TextStyle(color: Color(0xFF8D8E98), fontSize: 12)),
+                Text(product['description'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 12)),
                 const SizedBox(height: 10),
-                Text("\$249.00", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text("₱${product['price'].toStringAsFixed(2)}", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16)),
               ],
             ),
           ),
@@ -450,47 +542,33 @@ class ProShopProductCard extends StatelessWidget {
 }
 
 class CompactProductList extends StatelessWidget {
-  const CompactProductList({super.key});
+  final List<Map<String, dynamic>> products;
+
+  const CompactProductList({super.key, required this.products});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: const [
-        CompactProductItem(
-          name: "AeroFlight Feathers", 
-          desc: "Tournament Grade", 
-          price: "\$35.00", 
-          fallbackIcon: Icons.sports_kabaddi_outlined,
-          imagePath: 'assets/img/SHT-001.png', 
-        ),
-        SizedBox(height: 16),
-        CompactProductItem(
-          name: "Sync Dry-Fit Tee", 
-          desc: "Midnight Navy", 
-          price: "\$45.00", 
-          fallbackIcon: Icons.checkroom_outlined,
-          imagePath: 'assets/img/APP-001.png', 
-        ),
+      children: [
+        if (products.isNotEmpty)
+          CompactProductItem(product: products[0]),
+        const SizedBox(height: 16),
+        if (products.length > 1)
+          CompactProductItem(product: products[1]),
       ],
     );
   }
 }
 
 class CompactProductItem extends StatelessWidget {
-  final String name, desc, price, imagePath;
-  final IconData fallbackIcon;
+  final Map<String, dynamic> product;
 
-  const CompactProductItem({
-    super.key, 
-    required this.name, 
-    required this.desc, 
-    required this.price, 
-    required this.fallbackIcon,
-    required this.imagePath
-  });
+  const CompactProductItem({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    String? imgPath = product['image_path'];
+    
     return Container(
       width: 250,
       padding: const EdgeInsets.all(12),
@@ -502,11 +580,9 @@ class CompactProductItem extends StatelessWidget {
             decoration: BoxDecoration(color: const Color(0xFF111226), borderRadius: BorderRadius.circular(8)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(fallbackIcon, color: Colors.white30),
-              ),
+              child: imgPath != null && imgPath.isNotEmpty
+                  ? Image.file(File(imgPath), fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.broken_image, color: Colors.white30))
+                  : const Icon(Icons.shopping_bag, color: Colors.white30),
             ),
           ),
           const SizedBox(width: 12),
@@ -514,14 +590,14 @@ class CompactProductItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
+                Text(product['name'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(desc, style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 12)),
+                Text(product['category'] ?? 'Gear', style: const TextStyle(color: Color(0xFF8D8E98), fontSize: 12)),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text(price, style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text("₱${product['price'].toStringAsFixed(0)}", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 14)),
         ],
       ),
     );

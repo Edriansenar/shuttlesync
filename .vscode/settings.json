@@ -2,5 +2,6 @@
     "java.project.sourcePaths": [
         "lib/assets",
         ""
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

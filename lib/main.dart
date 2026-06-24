@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shuttlesync/database/database_helper.dart';
 
 import 'package:shuttlesync/screens/homepage.dart';
 import 'package:shuttlesync/screens/aboutuspage.dart';
@@ -7,22 +9,42 @@ import 'package:shuttlesync/screens/registerpage.dart';
 import 'package:shuttlesync/screens/contactus.dart';
 import 'package:shuttlesync/screens/courtbooking.dart';
 import 'package:shuttlesync/screens/ecommercepage.dart';
+import 'package:shuttlesync/screens/admindashboard.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
-  runApp(const MyApp());
+  
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  int? savedUserId = prefs.getInt('saved_user_id');
+
+  Widget initialScreen = const HomePage(currentUser: null);
+
+  if (savedUserId != null) {
+    final db = await DatabaseHelper.instance.database;
+    final userResult = await db.query('Users', where: 'user_id = ?', whereArgs: [savedUserId]);
+    
+    if (userResult.isNotEmpty) {
+      if (userResult.first['role'] == 'admin') {
+        initialScreen = AdminDashboard(currentUser: userResult.first);
+      } else {
+        initialScreen = HomePage(currentUser: userResult.first);
+      }
+    }
+  }
+
+  runApp(MyApp(initialScreen: initialScreen));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget initialScreen;
+  const MyApp({super.key, required this.initialScreen});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
-      
       title: 'ShuttleSync',
       debugShowCheckedModeBanner: false, 
       
@@ -47,7 +69,7 @@ class MyApp extends StatelessWidget {
       ),
        
       routes: {
-        '/homepage': (context) => const HomePage(),
+        '/homepage': (context) => const HomePage(currentUser: null),
         '/aboutus': (context) => const AboutUsPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
@@ -56,7 +78,7 @@ class MyApp extends StatelessWidget {
         '/shop': (context) => const ShopPage(),
       },
       
-      home: const HomePage(currentUser: null), 
+      home: initialScreen, 
     );
   }
 }
