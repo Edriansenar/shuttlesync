@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shuttlesync/database/database_helper.dart';
+import 'package:shuttlesync/screens/main_navigation.dart';
 
 class CourtBookingPage extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -183,8 +184,13 @@ class _CourtBookingScreenState extends State<CourtBookingPage> {
           actions: [
              TextButton(
                onPressed: () {
-                 Navigator.pop(context); 
-                 Navigator.pop(context); 
+                 Navigator.pop(context); // Close the dialog
+                 // Safely reset the navigation stack to the Home tab
+                 Navigator.pushAndRemoveUntil(
+                   context,
+                   MaterialPageRoute(builder: (context) => MainNavigation(currentUser: widget.currentUser)),
+                   (route) => false,
+                 );
                },
                child: const Text("GO TO DASHBOARD", style: TextStyle(color: Color(0xFFBB6AFB), fontWeight: FontWeight.bold))
              )

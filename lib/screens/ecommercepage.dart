@@ -71,10 +71,13 @@ class _ShopPageState extends State<ShopPage> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // REPLACE your leading with this conditional logic:
+        leading: Navigator.canPop(context) 
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null, // Hides the button if it's inside the Bottom Tab Navigation
         title: const Text("PRO SHOP", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryPurple)),
         centerTitle: true,
         actions: [

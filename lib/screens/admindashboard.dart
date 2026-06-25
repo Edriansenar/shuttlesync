@@ -5,6 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p; 
 import 'package:shuttlesync/database/database_helper.dart';
 import 'package:shuttlesync/screens/analyticspage.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shuttlesync/screens/loginpage.dart';
 
 class AdminDashboard extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -176,10 +178,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product Published!'), backgroundColor: Colors.green));
   }
 
-  void _logout() {
+  void _logout() async {
     FocusScope.of(context).unfocus();
-    final navigator = Navigator.of(context, rootNavigator: true);
-    navigator.pushReplacementNamed('/login');
+    
+    // Clear the saved user so they don't auto-login again
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPage()), 
+        (route) => false
+      );
+    }
   }
 
   @override

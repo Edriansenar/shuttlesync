@@ -333,8 +333,7 @@ class _PlayerDashboardState extends State<PlayerDashboard> {
             children: [
               const Text("Ready to level up?", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text("You've played ${_myBookings.length} sessions. Keep booking to reach 'Legendary' status!", style: TextStyle(color: textGray, fontSize: 13, height: 1.4)),
-              const SizedBox(height: 20),
+              Text("You've played ${widget.currentUser!['matches_played'] ?? 0} sessions. Keep booking to reach 'Legendary' status!", style: TextStyle(color: textGray, fontSize: 13, height: 1.4)),              const SizedBox(height: 20),
               Container(
                 height: 8, width: double.infinity, decoration: BoxDecoration(color: const Color(0xFF110F18), borderRadius: BorderRadius.circular(4)),
                 child: FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: 0.4, child: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [primaryPurple, accentPink]), borderRadius: BorderRadius.circular(4)))),
