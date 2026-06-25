@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shuttlesync/screens/registerpage.dart';
 import 'package:shuttlesync/screens/main_navigation.dart';
 import 'package:shuttlesync/database/database_helper.dart'; 
+import 'package:shuttlesync/screens/admindashboard.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -45,13 +46,24 @@ class _LoginScreenState extends State<LoginPage> {
           SnackBar(content: Text('Welcome back, ${user['full_name']}!'), backgroundColor: Colors.green),
         );
         
-        Navigator.pushAndRemoveUntil(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => MainNavigation(currentUser: user) 
-          ),
-          (Route<dynamic> route) => false, 
-        );
+        // FIX: Admin users are routed directly to the dashboard, players to the tabs
+        if (user['role'] == 'admin') {
+          Navigator.pushAndRemoveUntil(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => AdminDashboard(currentUser: user) 
+            ),
+            (Route<dynamic> route) => false, 
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => MainNavigation(currentUser: user) 
+            ),
+            (Route<dynamic> route) => false, 
+          );
+        }
       } else {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(

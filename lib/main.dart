@@ -10,9 +10,10 @@ import 'package:shuttlesync/screens/contactus.dart';
 import 'package:shuttlesync/screens/courtbooking.dart';
 import 'package:shuttlesync/screens/ecommercepage.dart';
 import 'package:shuttlesync/screens/admindashboard.dart';
+import 'package:shuttlesync/screens/main_navigation.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
+// Update your main() function in lib/main.dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
   
@@ -26,17 +27,18 @@ void main() async {
     final userResult = await db.query('Users', where: 'user_id = ?', whereArgs: [savedUserId]);
     
     if (userResult.isNotEmpty) {
+      // FIX: Route admins directly to AdminDashboard, players to MainNavigation
       if (userResult.first['role'] == 'admin') {
-        initialScreen = AdminDashboard(currentUser: userResult.first);
+        // NOTE: Make sure your AdminDashboard accepts currentUser in its constructor
+        initialScreen = AdminDashboard(currentUser: userResult.first); 
       } else {
-        initialScreen = HomePage(currentUser: userResult.first);
+        initialScreen = MainNavigation(currentUser: userResult.first);
       }
     }
   }
 
   runApp(MyApp(initialScreen: initialScreen));
 }
-
 class MyApp extends StatelessWidget {
   final Widget initialScreen;
   const MyApp({super.key, required this.initialScreen});

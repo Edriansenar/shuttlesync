@@ -30,9 +30,10 @@ class _MainNavigationState extends State<MainNavigation> {
     if (isAdmin) {
       _screens = [
         DashboardScreen(currentUser: widget.currentUser), 
-        ShopPage(currentUser: widget.currentUser),        // FIXED: Passed user data
+        ShopPage(currentUser: widget.currentUser),        
         CourtBookingPage(currentUser: widget.currentUser),                         
-        const AdminDashboard(),                           
+        // FIXED: Removed "const" and passed currentUser to AdminDashboard
+        AdminDashboard(currentUser: widget.currentUser),                           
       ];
 
       _navItems = const [
@@ -45,7 +46,7 @@ class _MainNavigationState extends State<MainNavigation> {
     } else {
       _screens = [
         DashboardScreen(currentUser: widget.currentUser), 
-        ShopPage(currentUser: widget.currentUser),        // FIXED: Passed user data
+        ShopPage(currentUser: widget.currentUser),        
         CourtBookingPage(currentUser: widget.currentUser),                         
         PlayerDashboard(currentUser: widget.currentUser), 
       ];
