@@ -1,4 +1,4 @@
-# etherealapp
+# ShuttleSync
 
 A new Flutter project.
 
